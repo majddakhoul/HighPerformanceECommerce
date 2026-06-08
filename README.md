@@ -1,22 +1,22 @@
 # High-Performance E-Commerce Backend Engine
 
-<p align="center">
-<img src="https://laravel.com/img/logomark.min.svg" height="80" alt="Laravel">
-<img src="https://redis.io/wp-content/uploads/2024/04/Logotype.svg?auto=webp&quality=85,75&width=120" height="80" alt="Redis">
-<img src="https://nginx.org/nginx.png" height="80" alt="Nginx">
-<img src="https://www.docker.com/wp-content/uploads/2022/03/Moby-logo.png" height="80" alt="Docker">
-</p>
 
-<p align="center">
-<img src="https://img.shields.io/badge/Laravel-11.x-FF2D20?logo=laravel" alt="Laravel 11.x">
-<img src="https://img.shields.io/badge/PHP-8.2+-777BB4?logo=php" alt="PHP 8.2+">
-<img src="https://img.shields.io/badge/Redis-7.x-DC382D?logo=redis" alt="Redis 7.x">
-<img src="https://img.shields.io/badge/Nginx-1.30-009639?logo=nginx" alt="Nginx 1.30">
-<img src="https://img.shields.io/badge/JWT-auth-000000?logo=JSON%20web%20tokens" alt="JWT Auth">
-<img src="https://img.shields.io/badge/Docker-27.0.3-2496ED?logo=docker" alt="Docker">
-<img src="https://img.shields.io/badge/Swoole-6.x-0089FF?logo=swoole" alt="Swoole">
-<img src="https://img.shields.io/badge/license-MIT-green" alt="License">
-</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ---
 
@@ -126,7 +126,7 @@ Three application containers run behind an Nginx reverse proxy. The `least_conn`
 
 Nginx configuration snippet:
 
-```nginx
+
 upstream laravel_backend {
     least_conn;
     server 127.0.0.1:8001;
@@ -172,7 +172,7 @@ A before/after comparison identified the primary bottleneck as the single‑thre
 
 ## Project Structure
 
-```text
+
 app/
 ├── Console/Commands/          # Artisan commands (TestCaseTester, PerformanceTester)
 ├── Contracts/                 # Interfaces (CartServiceInterface, TopProductsServiceInterface)
@@ -220,7 +220,7 @@ The development of this backend engine heavily relies on the official documentat
 * Redis (or Memurai on Windows)
 
 **Steps**
-```bash
+
 git clone [https://github.com/majddakhoul/HighPerformanceECommerce.git](https://github.com/majddakhoul/HighPerformanceECommerce.git)
 cd HighPerformanceECommerce
 composer install
@@ -238,7 +238,7 @@ php artisan serve --port=8000
 
 ### Build and run
 
-```bash
+
 # Build the image (no email, Redis for sessions and cache)
 docker build --no-cache -t laravel-octane .
 
@@ -396,7 +396,7 @@ Comparison between the built‑in `artisan serve` server and Octane/Swoole.
 
 Key `.env` variables for the optimised setup (replace with your own values):
 
-```ini
+
 APP_DEBUG=false
 CACHE_DRIVER=redis
 SESSION_DRIVER=redis
