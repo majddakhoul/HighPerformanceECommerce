@@ -134,6 +134,8 @@ upstream laravel_backend {
     server 127.0.0.1:8003;
 }
 
+```
+
 The `X-Upstream` header is added to responses to verify request distribution.
 
 ### Distributed Caching Strategy
@@ -195,6 +197,8 @@ app/
 ├── Services/                  # Business logic (OrderService, CartService, etc.)
 └── Traits/ApiResponse.php     # Standardised JSON responses
 
+```
+
 ## References & Documentations
 
 The development of this backend engine heavily relies on the official documentations and best practices provided by the following technologies and packages:
@@ -230,6 +234,8 @@ php artisan jwt:secret
 # configure your database and Redis connection in .env
 php artisan migrate:fresh --seed
 php artisan serve --port=8000
+
+```
 
 ## Docker Environment
 
@@ -270,6 +276,8 @@ echo 'Generated ' . count(\$tokens) . ' tokens.';
 
 # Copy tokens to your host
 docker cp octane1:/var/www/storage/app/tokens.json storage/app/tokens.json
+
+```
 
 ## API Endpoints
 
@@ -409,6 +417,8 @@ MAIL_MAILER=smtp
 MAIL_HOST=your_mail_host
 MAIL_USERNAME=your_mail_username
 MAIL_PASSWORD=your_mail_password
+
+```
 
 ## License
 
