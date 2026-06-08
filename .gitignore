@@ -1,4 +1,3 @@
-/.phpunit.cache
 /node_modules
 /public/build
 /public/hot
@@ -7,7 +6,7 @@
 /vendor
 .env
 .env.backup
-.env.production
+.env.example
 .phpunit.result.cache
 Homestead.json
 Homestead.yaml
@@ -17,5 +16,15 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
-.phpunit.cache
 *.lock
+**/caddy
+frankenphp
+frankenphp-worker.php
+rr
+rr.exe
+.rr.yaml
+.roadrunner
+*.zip
+generate_tokens.php
+Dockerfile
+*.log

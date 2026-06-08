@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Traits\ApiResponse;
@@ -18,12 +19,16 @@ class AuthController extends Controller
 
     public function register(RegisterRequest $request)
     {
-        $dto = RegisterDTO::fromRequest($request);
-        $result = $this->authService->register($dto);
-        return $this->success([
-            'user'  => new UserResource($result['user']),
-            'token' => $result['token'],
-        ], 'Registered successfully', 201);
+        try {
+            $dto = RegisterDTO::fromRequest($request);
+            $result = $this->authService->register($dto);
+            return $this->success([
+                'user'  => new UserResource($result['user']),
+                'token' => $result['token'],
+            ], 'Registered successfully', 201);
+        } catch (\Exception $e) {
+            return $this->error($e->getMessage(), 422);
+        }
     }
 
     public function login(LoginRequest $request)

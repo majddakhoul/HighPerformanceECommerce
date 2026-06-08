@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Traits\ApiResponse;
@@ -23,9 +24,13 @@ class UserController extends Controller
 
     public function index()
     {
-        $this->authorize('viewAny', User::class);
-        $users = $this->userService->getAllUsers();
-        return $this->success(UserResource::collection($users));
+        try {
+            $this->authorize('viewAny', User::class);
+            $users = $this->userService->getAllUsers();
+            return $this->success(UserResource::collection($users));
+        } catch (\Exception $e) {
+            return $this->error($e->getMessage(), $e->getCode() ?: 403);
+        }
     }
 
     public function update(UpdateUserRequest $request)
@@ -46,7 +51,7 @@ class UserController extends Controller
             $this->userService->deleteUser($dto, Auth::user());
             return $this->success(null, 'User deleted');
         } catch (\Exception $e) {
-            return $this->error($e->getMessage(), 403);
+            return $this->error($e->getMessage(), $e->getCode() ?: 403);
         }
     }
 
@@ -57,7 +62,7 @@ class UserController extends Controller
             $user = $this->userService->assignRoleToUser($dto, Auth::user());
             return $this->success(new UserResource($user), 'Role assigned');
         } catch (\Exception $e) {
-            return $this->error($e->getMessage(), 403);
+            return $this->error($e->getMessage(), $e->getCode() ?: 403);
         }
     }
 
@@ -68,7 +73,7 @@ class UserController extends Controller
             $user = $this->userService->removeRoleFromUser($dto, Auth::user());
             return $this->success(new UserResource($user), 'Role removed');
         } catch (\Exception $e) {
-            return $this->error($e->getMessage(), 403);
+            return $this->error($e->getMessage(), $e->getCode() ?: 403);
         }
     }
 }

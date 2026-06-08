@@ -8,9 +8,12 @@
         "php": "^8.1",
         "guzzlehttp/guzzle": "^7.2",
         "laravel/framework": "^10.10",
+        "laravel/octane": "^2.17",
         "laravel/sanctum": "^3.3",
         "laravel/tinker": "^2.8",
         "maatwebsite/excel": "^3.1",
+        "nyholm/psr7": "^1.8",
+        "predis/predis": "^3.5",
         "spatie/laravel-permission": "^6.25",
         "tymon/jwt-auth": "^2.3"
     },
@@ -62,6 +65,9 @@
         "allow-plugins": {
             "pestphp/pest-plugin": true,
             "php-http/discovery": true
+        },
+        "audit": {
+            "ignore": ["PKSA-xbp4-qwr2-cbjj"]
         }
     },
     "minimum-stability": "stable",

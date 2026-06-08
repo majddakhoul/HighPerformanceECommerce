@@ -12,7 +12,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 
-class ProcessOrderJob implements ShouldQueue
+class ProcessOrderOptimisticJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -38,7 +38,7 @@ class ProcessOrderJob implements ShouldQueue
         if ($this->mode === 'unsafe') {
             $order = $orderService->confirmOrderUnsafe($order, $this->items);
         } else {
-            $order = $orderService->confirmOrderSafe($order, $this->items);
+            $order = $orderService->confirmOrderOptimistic($order, $this->items);
         }
 
         foreach ($this->items as $item) {
@@ -50,7 +50,7 @@ class ProcessOrderJob implements ShouldQueue
 
     public function failed(\Throwable $e): void
     {
-        Log::critical('ProcessOrderJob failed', [
+        Log::critical('ProcessOrderOptimisticJob failed', [
             'order_id' => $this->orderId,
             'error'    => $e->getMessage(),
         ]);

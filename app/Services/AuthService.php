@@ -5,6 +5,7 @@ namespace App\Services;
 use App\DTOs\RegisterDTO;
 use App\DTOs\LoginDTO;
 use App\Repositories\Contracts\UserRepositoryInterface;
+use Illuminate\Support\Facades\DB;
 
 class AuthService
 {
@@ -12,12 +13,25 @@ class AuthService
 
     public function register(RegisterDTO $dto): array
     {
-        $data = $dto->toArray();
-        $data['password'] = bcrypt($data['password']);
-        $user = $this->userRepo->create($data);
-        $user->assignRole('user');
-        $token = auth()->login($user);
-        return ['user' => $user, 'token' => $token];
+        return DB::transaction(function () use ($dto) {
+            $data = $dto->toArray();
+            $data['password'] = bcrypt($data['password']);
+            $user = $this->userRepo->create($data);
+
+            try {
+                $user->assignRole('user');
+            } catch (\Exception $e) {
+                throw new \RuntimeException('Role assignment failed: ' . $e->getMessage());
+            }
+
+            try {
+                $token = auth()->login($user);
+            } catch (\Exception $e) {
+                throw new \RuntimeException('Token generation failed: ' . $e->getMessage());
+            }
+
+            return ['user' => $user, 'token' => $token];
+        });
     }
 
     public function login(LoginDTO $dto): string

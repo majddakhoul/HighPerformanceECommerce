@@ -38,4 +38,22 @@ class OrderProcessingService
 
         return $order->load('invoice');
     }
+    public function processSyncWithIntentionalFailure(CreateOrderDTO $dto, int $userId): never
+    {
+        $order = $this->orderService->createPendingOrder($userId);
+
+        DB::beginTransaction();
+        try {
+            $order = $this->orderService->confirmOrderSafe($order, $dto->items);
+
+            $invoice = $this->invoiceService->createFromOrder($order);
+
+            throw new \Exception('Simulated failure after stock deduction');
+
+            DB::commit();
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            throw $e;
+        }
+    }
 }

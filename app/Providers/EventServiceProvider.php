@@ -18,6 +18,9 @@ class EventServiceProvider extends ServiceProvider
         Registered::class => [
             SendEmailVerificationNotification::class,
         ],
+        \Illuminate\Auth\Events\Logout::class => [
+            \App\Listeners\DeleteCartOnLogout::class,
+        ],
     ];
 
     /**

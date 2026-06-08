@@ -17,7 +17,7 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule): void
     {
         // $schedule->command('inspire')->hourly();
-       $schedule->job(new ProcessDailySalesJobWithChunk(now()->toDateString()), 'sales')
+        $schedule->job(new ProcessDailySalesJobWithChunk(now()->toDateString()), 'sales')
             //->dailyAt('02:00');
             //->everyMinute();
             ->everyTwoMinutes();

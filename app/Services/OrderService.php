@@ -2,14 +2,14 @@
 
 namespace App\Services;
 
-use App\DTOs\CreateOrderDTO;
-use App\DTOs\UpdateOrderDTO;
+use App\DTOs\CancelOrderDTO;
 use App\DTOs\DeleteOrderDTO;
 use App\Repositories\Contracts\OrderRepositoryInterface;
 use App\Repositories\Contracts\ProductRepositoryInterface;
 use App\Models\Order;
+use App\Models\Product;
+use App\Repositories\Contracts\TopProductsServiceInterface as ContractsTopProductsServiceInterface;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
 
 class OrderService
 {
@@ -31,13 +31,12 @@ class OrderService
     public function getOrderById(int $id): Order
     {
         $order = $this->orderRepo->find($id);
-
         if (!$order) {
             throw new \Exception('Order not found', 404);
         }
-
         return $order;
     }
+
     public function createPendingOrder(int $userId): Order
     {
         return $this->orderRepo->create([
@@ -54,23 +53,18 @@ class OrderService
 
         foreach ($items as $item) {
             $product = $this->productRepo->find($item['product_id']);
-
             if (!$product) {
                 throw new \RuntimeException('Product not found', 404);
             }
-
             if ($product->stock < $item['quantity']) {
                 throw new \RuntimeException('Insufficient stock', 409);
             }
-
             $total += $product->price * $item['quantity'];
-
             $orderItems[] = [
                 'product_id' => $product->id,
                 'quantity'   => $item['quantity'],
                 'price'      => $product->price,
             ];
-
             $product->decrement('stock', $item['quantity']);
         }
 
@@ -94,23 +88,18 @@ class OrderService
 
             foreach ($items as $item) {
                 $product = $this->productRepo->findAndLockForUpdate($item['product_id']);
-
                 if (!$product) {
                     throw new \RuntimeException('Product not found', 404);
                 }
-
                 if ($product->stock < $item['quantity']) {
                     throw new \RuntimeException('Insufficient stock', 409);
                 }
-
                 $total += $product->price * $item['quantity'];
-
                 $orderItems[] = [
                     'product_id' => $product->id,
                     'quantity'   => $item['quantity'],
                     'price'      => $product->price,
                 ];
-
                 $product->decrement('stock', $item['quantity']);
             }
 
@@ -150,23 +139,93 @@ class OrderService
 
         return $order;
     }
+
     public function deleteOrder(DeleteOrderDTO $dto): bool
     {
         $order = $this->orderRepo->find($dto->id);
-
         if (!$order) {
             throw new \Exception('Order not found', 404);
         }
 
         return DB::transaction(function () use ($order) {
-
             foreach ($order->items as $item) {
                 $product = $item->product;
-
                 $product->increment('stock', $item->quantity);
             }
-
             return $this->orderRepo->delete($order);
+        }, 5);
+    }
+
+    public function cancelOrder(CancelOrderDTO $dto, int $userId, ContractsTopProductsServiceInterface $topProducts): Order
+    {
+        $order = $this->getOrderById($dto->id);
+        if ($order->user_id !== $userId) {
+            throw new \Exception('Unauthorized', 403);
+        }
+        if (in_array($order->status, ['delivered', 'cancelled'])) {
+            throw new \Exception('Order cannot be cancelled', 409);
+        }
+
+        return DB::transaction(function () use ($order, $topProducts) {
+            foreach ($order->items as $item) {
+                $product = $item->product;
+                $product->increment('stock', $item->quantity);
+                $topProducts->decrement($product->id);
+            }
+            $order = $this->orderRepo->update($order, ['status' => 'cancelled']);
+            if ($invoice = $order->invoice) {
+                $invoice->update(['status' => 'cancelled']);
+            }
+            return $order->load('items.product');
+        }, 5);
+    }
+    public function confirmOrderOptimistic(Order $order, array $items): Order
+    {
+        return DB::transaction(function () use ($order, $items) {
+            $total = 0;
+            $orderItems = [];
+
+            foreach ($items as $item) {
+                $product = $this->productRepo->find($item['product_id']);
+                if (!$product) {
+                    throw new \RuntimeException('Product not found', 404);
+                }
+                if ($product->stock < $item['quantity']) {
+                    throw new \RuntimeException('Insufficient stock', 409);
+                }
+
+                $newStock = $product->stock - $item['quantity'];
+                $currentVersion = $product->version;
+
+                $affected = Product::where('id', $product->id)
+                    ->where('version', $currentVersion)
+                    ->update([
+                        'stock'   => $newStock,
+                        'version' => $currentVersion + 1,
+                    ]);
+
+                if ($affected === 0) {
+                    throw new \RuntimeException('Optimistic lock failure, please retry', 409);
+                }
+
+                $total += $product->price * $item['quantity'];
+                $orderItems[] = [
+                    'product_id' => $product->id,
+                    'quantity'   => $item['quantity'],
+                    'price'      => $product->price,
+                ];
+            }
+
+            $this->orderRepo->update($order, [
+                'total_price' => $total,
+                'status'      => 'confirmed',
+            ]);
+
+            foreach ($orderItems as $oi) {
+                $order->items()->create($oi);
+            }
+
+            return $order->load('items.product');
         }, 5);
     }
 }

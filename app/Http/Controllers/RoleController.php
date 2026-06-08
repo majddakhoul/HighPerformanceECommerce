@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Traits\ApiResponse;
@@ -48,5 +49,4 @@ class RoleController extends Controller
         $this->roleService->deleteRole($dto);
         return $this->success(null, 'Role deleted');
     }
-
 }
