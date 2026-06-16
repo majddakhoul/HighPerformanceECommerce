@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\DB;
 use App\DTOs\OptimisticDecrementDTO;
 use App\DTOs\OptimisticDecrementUnsafeDTO;
+use Illuminate\Support\Facades\Cache;
 
 class ProductService
 {
@@ -97,5 +98,32 @@ class ProductService
 
             return $product->fresh();
         });
+    }
+    public function updateProductWithCacheLock(UpdateProductDTO $dto): Product
+    {
+        $lock = Cache::lock('product_update_' . $dto->id, 10);
+
+        try {
+            return $lock->block(5, function () use ($dto) {
+
+                return DB::transaction(function () use ($dto) {
+
+                    $product = $this->productRepo->find($dto->id);
+                    if (!$product) {
+                        throw new \Exception('Product not found', 404);
+                    }
+
+                    $data = $dto->toArray();
+                    $product = $this->productRepo->update($product, $data);
+
+                    return $product;
+                });
+            });
+        } catch (\Illuminate\Contracts\Cache\LockTimeoutException $e) {
+
+            throw new \Exception('Could not acquire lock, please try again later', 409);
+        } finally {
+            optional($lock)->release();
+        }
     }
 }

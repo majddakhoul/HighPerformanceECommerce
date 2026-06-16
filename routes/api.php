@@ -35,7 +35,8 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/products', [ProductController::class, 'store'])->name('products.create');
     Route::put('/products', [ProductController::class, 'update'])->name('products.update');
     Route::delete('/products', [ProductController::class, 'destroy'])->name('products.delete');
-
+    Route::put('/distributed/products/{id}', [ProductController::class, 'adminUpdate'])
+        ->name('admin.products.update');
     Route::post('/products/optimistic/decrement/unsafe', [ProductController::class, 'optimisticDecrementUnsafe'])->name('products.optimistic.unsafe');
     Route::post('/products/optimistic/decrement/safe', [ProductController::class, 'optimisticDecrementSafe'])->name('products.optimistic.safe');
 
@@ -83,7 +84,7 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/orders/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
     Route::post('/orders/test/transaction-failure', [OrderController::class, 'testTransactionFailure'])
         ->name('orders.test.transaction-failure');
-        
+
     Route::prefix('cart')->group(function () {
         Route::get('/', [CartController::class, 'index'])->name('cart.view');
         Route::post('/add', [CartController::class, 'add'])->name('cart.add');

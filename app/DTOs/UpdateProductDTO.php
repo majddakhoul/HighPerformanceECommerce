@@ -2,6 +2,7 @@
 
 namespace App\DTOs;
 
+use App\Http\Requests\AdminUpdateProductRequest;
 use App\Http\Requests\UpdateProductRequest;
 
 class UpdateProductDTO
@@ -30,7 +31,19 @@ class UpdateProductDTO
             image: $request->image
         );
     }
-
+    public static function fromAdminRequest(AdminUpdateProductRequest $request, int $id): self
+    {
+        return new self(
+            id: $id,
+            name: $request->name,
+            description: $request->description,
+            price: $request->price,
+            stock: $request->stock,
+            cost: $request->cost,
+            category: $request->category,
+            image: $request->image
+        );
+    }
     public function toArray(): array
     {
         return array_filter([

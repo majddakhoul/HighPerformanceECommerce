@@ -16,6 +16,7 @@ use App\Http\Resources\ProductResource;
 use App\Models\Product;
 use App\Http\Requests\OptimisticDecrementUnsafeRequest;
 use App\DTOs\OptimisticDecrementUnsafeDTO;
+use App\Http\Requests\AdminUpdateProductRequest;
 
 class ProductController extends Controller
 {
@@ -116,5 +117,23 @@ class ProductController extends Controller
             return $this->error($e->getMessage(), $code);
         }
     }
-    
+    public function adminUpdate(AdminUpdateProductRequest $request, $id)
+    {
+        try {
+
+            $this->authorize('update', Product::class);
+
+            $dto = UpdateProductDTO::fromAdminRequest($request, (int) $id);
+
+            $product = $this->productService->updateProductWithCacheLock($dto);
+
+            return $this->success(new ProductResource($product), 'Product updated');
+        } catch (\Exception $e) {
+            $code = (int) $e->getCode();
+            if ($code < 100 || $code > 599) {
+                $code = 409;
+            }
+            return $this->error($e->getMessage(), $code);
+        }
+    }
 }
