@@ -27,7 +27,56 @@ class TopProductsService implements TopProductsServiceInterface
             Cache::forget(self::LIST_CACHE_KEY);
         }
     }
+    /*
+    public function getTopProducts(int $limit = 20): array
+    {
+        return Cache::remember(
+            "top_products_list_{$limit}",
+            self::LIST_CACHE_TTL,
+            function () use ($limit) {
 
+                $top = Redis::zrevrange(
+                    self::SORTED_SET,
+                    0,
+                    $limit - 1,
+                    ['WITHSCORES' => true]
+                );
+
+                if (empty($top)) {
+                    return [];
+                }
+
+                $productIds = array_map(
+                    'intval',
+                    array_keys($top)
+                );
+
+                $products = Product::whereIn('id', $productIds)
+                    ->get()
+                    ->keyBy('id');
+
+                $result = [];
+
+                foreach ($top as $productId => $score) {
+
+                    $product = $products->get((int)$productId);
+
+                    if (!$product) {
+                        continue;
+                    }
+
+                    $result[] = [
+                        'product_id' => $product->id,
+                        'name'       => $product->name,
+                        'price'      => $product->price,
+                        'score'      => (int)$score,
+                    ];
+                }
+
+                return $result;
+            }
+        );
+    }*/
     public function getTopProducts(int $limit = 20): array
     {
         return Cache::remember(self::LIST_CACHE_KEY, self::LIST_CACHE_TTL, function () use ($limit) {
